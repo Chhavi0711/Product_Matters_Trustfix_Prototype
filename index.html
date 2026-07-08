@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrustFix — Clickable Prototype (Week 3)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B1F3A; --navy-light:#132A4D; --teal:#0E7C86; --teal-light:#15A2AC;
+    --green:#1FA37B; --green-soft:#E4F5EF; --amber:#E8A33D; --amber-soft:#FDF1DF;
+    --sand:#F4F6F9; --white:#FFFFFF; --ink:#16212B; --muted:#67768B; --line:#E2E7EE;
+    --danger:#D2492F; --danger-soft:#FBEAE5;
+    --radius:20px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--sand); color:var(--ink);
+    font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:28px 20px 60px;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:22px;}
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand-mark{width:34px; height:34px; border-radius:9px; background:var(--navy); display:flex; align-items:center; justify-content:center;}
+  .brand-mark svg{width:18px; height:18px;}
+  .brand-name{font-family:'Fraunces',serif; font-weight:800; font-size:20px; color:var(--navy); letter-spacing:-0.02em;}
+  .brand-tag{font-size:11px; color:var(--muted); letter-spacing:.04em; text-transform:uppercase; margin-top:1px;}
+
+  .app-switch{display:flex; background:var(--white); border:1px solid var(--line); border-radius:999px; padding:4px; gap:2px;}
+  .app-switch button{
+    border:none; background:transparent; padding:9px 18px; border-radius:999px; font-family:'Inter',sans-serif;
+    font-weight:600; font-size:13.5px; color:var(--muted); cursor:pointer; transition:.15s;
+  }
+  .app-switch button.active{background:var(--navy); color:#fff;}
+
+  /* ---------- Layout ---------- */
+  .stage{display:grid; grid-template-columns:300px 1fr; gap:34px; align-items:start;}
+  @media (max-width:860px){ .stage{grid-template-columns:1fr;} }
+
+  /* ---------- Phone ---------- */
+  .phone-col{display:flex; flex-direction:column; align-items:center; gap:16px; position:sticky; top:24px;}
+  @media (max-width:860px){ .phone-col{position:static;} }
+  .phone{
+    width:300px; height:624px; background:var(--navy); border-radius:38px; padding:12px;
+    box-shadow:0 30px 60px -20px rgba(11,31,58,.45), 0 2px 0 rgba(255,255,255,.4) inset;
+    position:relative;
+  }
+  .phone-screen{
+    width:100%; height:100%; background:var(--white); border-radius:28px; overflow:hidden;
+    display:flex; flex-direction:column; position:relative;
+  }
+  .notch{position:absolute; top:12px; left:50%; transform:translateX(-50%); width:90px; height:18px; background:var(--navy); border-radius:10px; z-index:5;}
+  .statusbar{height:34px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-size:11px; font-weight:700; color:var(--ink);}
+  .screen-body{flex:1; overflow-y:auto; -ms-overflow-style:none; scrollbar-width:none;}
+  .screen-body::-webkit-scrollbar{display:none;}
+
+  .controls{display:flex; align-items:center; gap:10px;}
+  .ctrl-btn{
+    border:1px solid var(--line); background:var(--white); color:var(--navy); font-family:'Inter',sans-serif;
+    font-weight:600; font-size:13px; padding:9px 16px; border-radius:10px; cursor:pointer; transition:.15s;
+  }
+  .ctrl-btn:hover{border-color:var(--navy);}
+  .ctrl-btn:disabled{opacity:.35; cursor:not-allowed;}
+  .step-dots{display:flex; gap:5px;}
+  .dot{width:6px; height:6px; border-radius:50%; background:var(--line);}
+  .dot.active{background:var(--teal); width:16px; border-radius:4px;}
+  .step-label{font-size:11.5px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.05em;}
+
+  /* ---------- Side annotation panel ---------- */
+  .panel{background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:26px 28px; min-height:560px;}
+  .panel-eyebrow{font-size:11.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--teal); margin-bottom:8px;}
+  .panel-title{font-family:'Fraunces',serif; font-weight:700; font-size:24px; color:var(--navy); margin:0 0 12px; line-height:1.25;}
+  .panel-body p{font-size:14.5px; line-height:1.65; color:#3C4A5C; margin:0 0 14px;}
+  .panel-section{margin-top:20px; padding-top:18px; border-top:1px solid var(--line);}
+  .panel-section h4{font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:0 0 10px; font-weight:700;}
+  .chip-row{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{font-size:12.5px; font-weight:600; padding:6px 12px; border-radius:999px; background:var(--sand); color:#3C4A5C; border:1px solid var(--line);}
+  .chip.gap{background:var(--amber-soft); color:#8A5A16; border-color:#F1DBAE;}
+  .chip.trace{background:var(--green-soft); color:#116649; border-color:#BFE6D7;}
+
+  /* ---------- Reusable in-screen UI ---------- */
+  .px{padding:0 20px;}
+  .app-header{padding:16px 20px 14px; display:flex; align-items:center; gap:10px;}
+  .back-arrow{width:30px; height:30px; border-radius:9px; background:var(--sand); display:flex; align-items:center; justify-content:center; flex:none; cursor:pointer;}
+  .app-header h2{font-family:'Fraunces',serif; font-size:17px; font-weight:700; color:var(--navy); margin:0;}
+  .app-header .sub{font-size:11px; color:var(--muted); margin-top:1px;}
+
+  .search-bar{margin:2px 20px 14px; background:var(--sand); border-radius:12px; padding:11px 14px; font-size:13px; color:var(--muted); display:flex; align-items:center; gap:8px;}
+
+  .trust-banner{margin:0 20px 16px; background:linear-gradient(120deg,var(--navy),var(--navy-light)); border-radius:16px; padding:16px 18px; color:#fff; display:flex; gap:12px; align-items:center;}
+  .trust-ring{width:40px; height:40px; border-radius:50%; border:2.5px solid var(--teal-light); display:flex; align-items:center; justify-content:center; flex:none; font-family:'Fraunces',serif; font-weight:700; font-size:13px;}
+  .trust-banner .tb-title{font-size:12.5px; font-weight:700;}
+  .trust-banner .tb-sub{font-size:11px; opacity:.75; margin-top:2px;}
+
+  .cat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 20px 16px;}
+  .cat-card{background:var(--white); border:1px solid var(--line); border-radius:14px; padding:14px 12px; cursor:pointer; transition:.15s;}
+  .cat-card:hover{border-color:var(--teal); transform:translateY(-1px);}
+  .cat-emoji{width:34px; height:34px; border-radius:10px; background:var(--sand); display:flex; align-items:center; justify-content:center; font-size:16px; margin-bottom:8px;}
+  .cat-card .cn{font-size:12.5px; font-weight:700; color:var(--ink);}
+  .cat-card .cp{font-size:10.5px; color:var(--muted); margin-top:2px;}
+
+  .section-title{padding:14px 20px 6px; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted);}
+
+  .svc-card{margin:0 20px 10px; border:1px solid var(--line); border-radius:14px; padding:13px 14px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;}
+  .svc-card:hover{border-color:var(--teal);}
+  .svc-name{font-size:13px; font-weight:700; color:var(--ink);}
+  .svc-desc{font-size:11px; color:var(--muted); margin-top:2px;}
+  .svc-price{font-family:'Fraunces',serif; font-weight:700; font-size:14px; color:var(--navy); white-space:nowrap;}
+
+  .pro-card{margin:16px 20px; border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:0 8px 20px -12px rgba(11,31,58,.2);}
+  .pro-top{display:flex; gap:12px; align-items:center;}
+  .avatar{width:48px; height:48px; border-radius:50%; background:var(--sand); display:flex; align-items:center; justify-content:center; font-size:20px; flex:none;}
+  .pro-name{font-size:14px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px;}
+  .verified-badge{background:var(--green-soft); color:#116649; font-size:9.5px; font-weight:700; padding:2px 7px; border-radius:999px;}
+  .pro-meta{font-size:11px; color:var(--muted); margin-top:2px;}
+  .pro-stats{display:flex; gap:10px; margin-top:14px;}
+  .stat-box{flex:1; background:var(--sand); border-radius:10px; padding:9px 10px; text-align:center;}
+  .stat-box .sv{font-family:'Fraunces',serif; font-weight:700; font-size:14px; color:var(--navy);}
+  .stat-box .sl{font-size:9.5px; color:var(--muted); margin-top:1px; text-transform:uppercase; letter-spacing:.03em;}
+
+  .price-breakdown{margin:0 20px 16px; border:1px dashed var(--line); border-radius:14px; padding:14px;}
+  .pb-row{display:flex; justify-content:space-between; font-size:12.5px; color:#3C4A5C; padding:5px 0;}
+  .pb-row.total{border-top:1px solid var(--line); margin-top:4px; padding-top:9px; font-weight:800; color:var(--ink); font-size:13.5px;}
+
+  .primary-btn{
+    margin:8px 20px 16px; background:var(--teal); color:#fff; border:none; border-radius:13px; padding:15px;
+    font-family:'Inter',sans-serif; font-weight:700; font-size:14px; text-align:center; cursor:pointer; width:calc(100% - 40px);
+  }
+  .primary-btn:hover{background:var(--teal-light);}
+  .secondary-btn{
+    margin:0 20px 10px; background:var(--white); color:var(--navy); border:1.5px solid var(--line); border-radius:13px; padding:13px;
+    font-weight:700; font-size:13.5px; text-align:center; cursor:pointer; width:calc(100% - 40px);
+  }
+  .danger-btn{color:var(--danger); border-color:var(--danger-soft); background:var(--danger-soft);}
+
+  .map-mock{margin:0 20px 14px; height:150px; border-radius:16px; background:
+     radial-gradient(circle at 30% 30%, #DCEEEC 0, transparent 45%),
+     repeating-linear-gradient(0deg, #EAF0F5, #EAF0F5 18px, #E2E9F0 18px, #E2E9F0 19px),
+     repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(11,31,58,.03) 30px, rgba(11,31,58,.03) 31px);
+     position:relative; overflow:hidden; border:1px solid var(--line);}
+  .map-dot{position:absolute; width:14px; height:14px; border-radius:50%; background:var(--teal); border:3px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  .map-route{position:absolute; border-top:2px dashed var(--navy); opacity:.4;}
+  .eta-chip{position:absolute; bottom:10px; left:10px; background:var(--navy); color:#fff; font-size:11px; font-weight:700; padding:6px 11px; border-radius:999px;}
+
+  .otp-card{margin:18px 20px; text-align:center; background:var(--navy); border-radius:18px; padding:24px 16px; color:#fff; position:relative;}
+  .otp-card::before,.otp-card::after{content:''; position:absolute; width:14px; height:14px; background:var(--sand); border-radius:50%; top:50%; transform:translateY(-50%);}
+  .otp-card::before{left:-7px;} .otp-card::after{right:-7px;}
+  .otp-label{font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; opacity:.7; font-weight:700;}
+  .otp-code{font-family:'Fraunces',serif; font-size:38px; font-weight:800; letter-spacing:.15em; margin:8px 0 4px;}
+  .otp-hint{font-size:11px; opacity:.65;}
+
+  .checklist{margin:0 20px 14px;}
+  .cl-item{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); font-size:12.5px;}
+  .cl-item:last-child{border-bottom:none;}
+  .cl-check{width:18px; height:18px; border-radius:6px; background:var(--green); display:flex; align-items:center; justify-content:center; flex:none;}
+  .cl-check.pending{background:var(--sand); border:1.5px solid var(--line);}
+
+  .photo-row{display:flex; gap:10px; margin:0 20px 16px;}
+  .photo-slot{flex:1; aspect-ratio:1; border-radius:12px; border:1.5px dashed var(--line); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-size:10.5px; color:var(--muted); background:var(--sand);}
+  .photo-slot.filled{background:linear-gradient(135deg,#DCEEEC,#EAF0F5); border-style:solid; border-color:var(--teal); color:var(--teal);}
+
+  .rating-row{display:flex; gap:14px; justify-content:center; margin:26px 20px;}
+  .rate-btn{width:78px; height:78px; border-radius:20px; border:1.5px solid var(--line); background:#fff; display:flex; align-items:center; justify-content:center; font-size:30px; cursor:pointer;}
+  .rate-btn.up:hover{border-color:var(--green); background:var(--green-soft);}
+  .rate-btn.down:hover{border-color:var(--danger); background:var(--danger-soft);}
+
+  .job-req-card{margin:20px; border-radius:18px; padding:18px; background:var(--white); border:1.5px solid var(--teal); box-shadow:0 10px 26px -14px rgba(14,124,134,.4);}
+  .payout-pill{display:inline-block; background:var(--green-soft); color:#116649; font-weight:800; font-size:18px; font-family:'Fraunces',serif; padding:6px 14px; border-radius:12px; margin-top:8px;}
+  .big-toggle{margin:26px 20px; display:flex; align-items:center; justify-content:space-between; background:var(--sand); border-radius:16px; padding:16px;}
+  .switch{width:52px; height:30px; border-radius:999px; background:var(--green); position:relative; flex:none;}
+  .switch .knob{width:24px; height:24px; border-radius:50%; background:#fff; position:absolute; top:3px; right:3px; box-shadow:0 2px 4px rgba(0,0,0,.2);}
+
+  .empty-note{margin:20px; text-align:center; color:var(--muted); font-size:12.5px; padding:30px 10px;}
+
+  .earnings-row{margin:0 20px 8px; display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:var(--sand); border-radius:12px; font-size:12.5px;}
+
+  .foot-note{padding:16px 20px 22px; font-size:10.5px; color:var(--muted); text-align:center; line-height:1.5;}
+
+  @media (max-width:520px){
+    .phone{width:270px; height:562px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L20 6V11C20 16 16.5 20.5 12 22C7.5 20.5 4 16 4 11V6L12 2Z" stroke="white" stroke-width="1.6"/><path d="M8.5 12.2L10.8 14.5L15.5 9.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">TrustFix</div>
+        <div class="brand-tag">Week 3 · Clickable Prototype</div>
+      </div>
+    </div>
+    <div class="app-switch">
+      <button id="btn-customer" class="active" onclick="setApp('customer')">Customer App — Riya</button>
+      <button id="btn-pro" onclick="setApp('pro')">Professional App — Rajesh</button>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="phone-col">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="phone-screen">
+          <div class="statusbar"><span id="sb-time">9:41</span><span>●●●●&nbsp;&nbsp;TrustFix</span></div>
+          <div class="screen-body" id="screen-body"></div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="ctrl-btn" id="prevBtn" onclick="prevStep()">← Back</button>
+        <div class="step-dots" id="dots"></div>
+        <button class="ctrl-btn" id="nextBtn" onclick="nextStep()">Next →</button>
+      </div>
+      <div class="step-label" id="stepLabel"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-eyebrow" id="panelEyebrow">Screen rationale</div>
+      <h3 class="panel-title" id="panelTitle"></h3>
+      <div class="panel-body"><p id="panelBody"></p></div>
+      <div class="panel-section">
+        <h4>Traceable to Week 2</h4>
+        <div class="chip-row" id="panelTrace"></div>
+      </div>
+      <div class="panel-section">
+        <h4>Gap surfaced while building</h4>
+        <div class="chip-row" id="panelGap"></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center; margin-top:26px; font-size:11.5px; color:var(--muted);">
+    Prototype by Chhavi Tanwar · TrustFix · Product Matters 6.0, Week 3 · Built as an interactive HTML mock (vibe-coded), not production code.
+  </div>
+</div>
+
+<script>
+/* ---------------- DATA: CUSTOMER FLOW ---------------- */
+const customerSteps = [
+  {
+    label:'1 · Discovery',
+    render: () => `
+      <div class="app-header"><div><h2>Good evening, Riya</h2><div class="sub">Kanpur · Home</div></div></div>
+      <div class="search-bar">🔍 Search "AC not cooling"...</div>
+      <div class="trust-banner">
+        <div class="trust-ring">✓</div>
+        <div><div class="tb-title">Every professional is verified</div><div class="tb-sub">ID-checked · Skill-tested · Trust Score visible</div></div>
+      </div>
+      <div class="section-title">What do you need?</div>
+      <div class="cat-grid">
+        <div class="cat-card" onclick="goTo('category')"><div class="cat-emoji">❄️</div><div class="cn">AC Repair</div><div class="cp">From ₹399</div></div>
+        <div class="cat-card" onclick="goTo('category')"><div class="cat-emoji">⚡</div><div class="cn">Electrician</div><div class="cp">From ₹249</div></div>
+        <div class="cat-card"><div class="cat-emoji">🔧</div><div class="cn">Plumbing</div><div class="cp">Coming soon</div></div>
+        <div class="cat-card"><div class="cat-emoji">🧹</div><div class="cn">Cleaning</div><div class="cp">Coming soon</div></div>
+      </div>
+      <div class="section-title">Book again</div>
+      <div class="svc-card" onclick="goTo('rating')"><div><div class="svc-name">Rajesh Kumar · Electrician</div><div class="svc-desc">Last booked 14 days ago · ★ 4.8</div></div><div class="svc-price">Rebook</div></div>
+    `,
+    panel:{
+      title:'Home — Category-first discovery',
+      body:`The MVP's "Predictable Pricing Engine" pillar meant discovery needed to lead with fixed-price categories, not a generic search box. Only the two launch categories (AC Repair, Electrician) from the GTM cold-start plan are tappable — Plumbing and Cleaning are visibly present but disabled, so Riya isn't misled into expecting live supply the platform hasn't liquidity for yet.`,
+      trace:['Persona: Riya Sharma','Pillar: Predictable Pricing','GTM: 2-category cold start'],
+      gap:['Wireframe never showed "coming soon" states — building this surfaced that unlaunched categories needed an explicit disabled state, not just omission.']
+    }
+  },
+  {
+    label:'2 · Category & pricing',
+    render: () => `
+      <div class="app-header"><div class="back-arrow" onclick="goTo('home')">←</div><div><h2>AC Repair</h2><div class="sub">Fixed base rates · no haggling</div></div></div>
+      <div class="section-title">Choose a service</div>
+      <div class="svc-card" onclick="goTo('match')"><div><div class="svc-name">AC Gas Refill</div><div class="svc-desc">45–60 min · window & split</div></div><div class="svc-price">₹899</div></div>
+      <div class="svc-card" onclick="goTo('match')"><div><div class="svc-name">AC Deep Cleaning</div><div class="svc-desc">40 min · foam-jet wash</div></div><div class="svc-price">₹499</div></div>
+      <div class="svc-card"><div><div class="svc-name">AC Installation</div><div class="svc-desc">90–120 min · new unit</div></div><div class="svc-price">₹1,199</div></div>
+      <div class="price-breakdown">
+        <div class="pb-row"><span>Base rate</span><span>₹499</span></div>
+        <div class="pb-row"><span>Visiting charge</span><span>₹0 (waived)</span></div>
+        <div class="pb-row total"><span>Total shown before booking</span><span>₹499</span></div>
+      </div>
+      <div class="primary-btn" onclick="goTo('match')">Continue with AC Deep Cleaning</div>
+    `,
+    panel:{
+      title:'Category → fixed-rate service list',
+      body:`This screen exists to kill haggling — the #1 customer pain point from the Week 2 discovery interviews. The full price is shown before Riya ever talks to a professional, matching the "Upfront Standardized Pricing" MVP feature marked Yes in the Feature Deep Dive.`,
+      trace:['Pain point: no standard pricing','MVP feature: Upfront Standardized Pricing'],
+      gap:['Deliberately left out: multi-item cart / bundling multiple services in one booking. It tested as confusing during prototyping and was cut to keep the MVP flow to one job at a time.']
+    }
+  },
+  {
+    label:'3 · Verified match',
+    render: () => `
+      <div class="app-header"><div class="back-arrow" onclick="goTo('category')">←</div><div><h2>Confirm professional</h2><div class="sub">Nearest verified match</div></div></div>
+      <div class="pro-card">
+        <div class="pro-top">
+          <div class="avatar">👨‍🔧</div>
+          <div>
+            <div class="pro-name">Rajesh Kumar <span class="verified-badge">✓ VERIFIED</span></div>
+            <div class="pro-meta">Electrician & AC Technician · 8 yrs experience</div>
+          </div>
+        </div>
+        <div class="pro-stats">
+          <div class="stat-box"><div class="sv">4.8</div><div class="sl">Trust Score</div></div>
+          <div class="stat-box"><div class="sv">1.8 km</div><div class="sl">Away</div></div>
+          <div class="stat-box"><div class="sv">12 min</div><div class="sl">ETA</div></div>
+        </div>
+      </div>
+      <div class="price-breakdown">
+        <div class="pb-row"><span>AC Deep Cleaning</span><span>₹499</span></div>
+        <div class="pb-row"><span>Arrival Guarantee</span><span>Included</span></div>
+        <div class="pb-row total"><span>You pay</span><span>₹499</span></div>
+      </div>
+      <div class="primary-btn" onclick="goTo('tracking')">Confirm booking · ₹499</div>
+      <div class="secondary-btn danger-btn" onclick="alert('Edge case handled: booking cancelled before match. No charge applied, category re-opens.')">Cancel</div>
+    `,
+    panel:{
+      title:'Matching — one verified option, not a marketplace list',
+      body:`Week 2's User Journey said "system pings the nearest verified professional" — singular, not a browsable list of 6 competing quotes. Showing exactly one match, with Trust Score and ETA upfront, is what makes the "psychological safety" pillar concrete instead of just a slide bullet.`,
+      trace:['Pillar: Verified Credential Layer','User Journey Step 2: Matching'],
+      gap:['Wireframe assumed customers pick from multiple professionals. Building the real tap-through showed that choice paralysis undercuts the "predictable, no-friction" promise — reduced to single best-match with a visible cancel path instead.']
+    }
+  },
+  {
+    label:'4 · Live tracking',
+    render: () => `
+      <div class="app-header"><div><h2>Rajesh is on the way</h2><div class="sub">Booking #TF-10482</div></div></div>
+      <div class="map-mock">
+        <div class="map-dot" style="top:30%; left:20%;"></div>
+        <div class="map-dot" style="top:60%; left:70%; background:var(--navy);"></div>
+        <div class="eta-chip">Arriving in 9 min</div>
+      </div>
+      <div class="svc-card" style="cursor:default;">
+        <div><div class="svc-name">Rajesh Kumar</div><div class="svc-desc">AC Deep Cleaning · ₹499</div></div>
+        <div class="svc-price">📞</div>
+      </div>
+      <div class="primary-btn" onclick="goTo('otpStart')">Rajesh has arrived</div>
+      <div class="secondary-btn danger-btn" onclick="alert('Edge case handled: mid-booking cancellation. A cancellation fee rule kicks in after professional is en route — surfaced during prototyping, absent from Week 2 spec.')">Cancel booking</div>
+    `,
+    panel:{
+      title:'Live tracking — replacing "did they even leave?" anxiety',
+      body:`Real-time tracking is one of TrustFix's five Core Principles. This screen is intentionally sparse: a map, an ETA, a call button — no chat. In-App Real-Time Chat was explicitly marked "No — High Complexity" in the Feature Deep Dive, so calling is the only contact channel here, exactly as scoped.`,
+      trace:['Core Principle: Real-time Tracking','Feature Deep Dive: Chat cut, call-only fallback'],
+      gap:['Building this flow exposed an unresolved edge case: what happens if a customer cancels after the professional is already en route? Week 2 never defined a cancellation-fee policy — flagged as an open decision for Week 4.']
+    }
+  },
+  {
+    label:'5 · Arrival OTP',
+    render: () => `
+      <div class="app-header"><div><h2>Verify arrival</h2><div class="sub">Share this code with Rajesh only</div></div></div>
+      <div class="otp-card"><div class="otp-label">Arrival OTP</div><div class="otp-code">7 4 3 1</div><div class="otp-hint">Starts the job timer once entered by the professional</div></div>
+      <div class="checklist">
+        <div class="cl-item"><div class="cl-check">✓</div> Professional identity confirmed on arrival</div>
+        <div class="cl-item"><div class="cl-check pending"></div> Job start pending OTP entry</div>
+      </div>
+      <div class="primary-btn" onclick="goTo('inProgress')">Simulate: Rajesh entered OTP</div>
+    `,
+    panel:{
+      title:'Arrival OTP — the safety pillar made physical',
+      body:`This is the "psychological safety" need from Riya's persona turned into an actual interaction: nothing starts, timer or billing, until she actively shares a code with the person standing at her door. It's the cheapest possible feature to build and the most important trust signal in the whole flow.`,
+      trace:['MVP feature: OTP-Verified Job Start & End','Pain point: fear of unverified people entering home'],
+      gap:[]
+    }
+  },
+  {
+    label:'6 · Job in progress',
+    render: () => `
+      <div class="app-header"><div><h2>Job in progress</h2><div class="sub">Digital Job Card · #TF-10482</div></div></div>
+      <div class="checklist">
+        <div class="cl-item"><div class="cl-check">✓</div> Arrival verified · 2:14 PM</div>
+        <div class="cl-item"><div class="cl-check">✓</div> Before photo captured</div>
+        <div class="cl-item"><div class="cl-check pending"></div> Deep cleaning in progress...</div>
+        <div class="cl-item"><div class="cl-check pending"></div> After photo & completion OTP</div>
+      </div>
+      <div class="section-title">Before photo</div>
+      <div class="photo-row"><div class="photo-slot filled">📷 Uploaded</div><div class="photo-slot">Waiting for after photo</div></div>
+      <div class="primary-btn" onclick="goTo('otpComplete')">Skip ahead: work finished</div>
+    `,
+    panel:{
+      title:'Digital Job Card — accountability without a chat thread',
+      body:`Rather than messaging, the job card is the shared source of truth for both sides. Before/after photos double as dispute evidence and as content for Rajesh's growing track record — turning one job into reusable proof for the next customer.`,
+      trace:['MVP feature: Digital Job Card','MVP feature: Before/After Photos'],
+      gap:["Week 2 didn't specify what happens if the professional needs materials/parts mid-job (e.g. AC part unavailable). Left explicitly out of this prototype — flagged as a Week 4 flow, not faked here."]
+    }
+  },
+  {
+    label:'7 · Completion & payment',
+    render: () => `
+      <div class="app-header"><div><h2>Job complete</h2><div class="sub">Enter the code Rajesh shows you</div></div></div>
+      <div class="otp-card"><div class="otp-label">Completion OTP</div><div class="otp-code">2 9 0 6</div><div class="otp-hint">Confirms work is done before payment is charged</div></div>
+      <div class="price-breakdown">
+        <div class="pb-row"><span>AC Deep Cleaning</span><span>₹499</span></div>
+        <div class="pb-row"><span>Platform fee</span><span>₹0</span></div>
+        <div class="pb-row total"><span>Charged to UPI</span><span>₹499</span></div>
+      </div>
+      <div class="primary-btn" onclick="goTo('rating')">Pay ₹499 & finish</div>
+    `,
+    panel:{
+      title:'Completion OTP gates payment, not the other way around',
+      body:`Sequencing matters here: OTP confirmation happens before the charge fires, not after. That ordering was a deliberate fix made while wiring the prototype — Week 2's journey slide listed "payment" and "OTP" in the same step without specifying order.`,
+      trace:['User Journey Step 4: Settlement'],
+      gap:['Resolved during build: original wireframe implied payment and completion-OTP as simultaneous. Sequenced explicitly to prevent paying for unfinished work.']
+    }
+  },
+  {
+    label:'8 · Rate & rebook',
+    render: () => `
+      <div class="app-header"><div><h2>How did it go?</h2><div class="sub">Two-way binary rating</div></div></div>
+      <div class="rating-row">
+        <div class="rate-btn up" onclick="alert('Thanks! Rajesh\\'s Trust Score updates instantly.')">👍</div>
+        <div class="rate-btn down" onclick="alert('Edge case handled: a thumbs-down routes to a 1-tap issue category (late / incomplete / unprofessional) before submitting.')">👎</div>
+      </div>
+      <div class="svc-card" style="cursor:default;">
+        <div><div class="svc-name">Save Rajesh as your go-to</div><div class="svc-desc">Easy rebooking for next AC/electrical job</div></div>
+        <div class="svc-price">⭐</div>
+      </div>
+      <div class="primary-btn" onclick="goTo('home')">Done — back to home</div>
+    `,
+    panel:{
+      title:'Binary rating — speed over granularity',
+      body:`Week 2's journey step explicitly called for "Thumbs Up/Down for speed" instead of a 5-star form, because Riya is rating on her way out the door, not writing a review. Easy Rebooking sits right below it, closing the loop toward repeat usage — the behaviour the North Star Metric depends on.`,
+      trace:['User Journey Step 4: binary rating','MVP feature: Easy Rebooking'],
+      gap:[]
+    }
+  }
+];
+
+/* ---------------- DATA: PROFESSIONAL FLOW ---------------- */
+const proSteps = [
+  {
+    label:'1 · Availability',
+    render: () => `
+      <div class="app-header"><div><h2>Namaste, Rajesh</h2><div class="sub">Electrician · AC Technician</div></div></div>
+      <div class="big-toggle">
+        <div><div style="font-weight:800; font-size:14px;">You're Online</div><div style="font-size:11.5px; color:var(--muted); margin-top:2px;">Nearby jobs will be sent to you</div></div>
+        <div class="switch"><div class="knob"></div></div>
+      </div>
+      <div class="earnings-row"><span>Today's earnings</span><span style="font-weight:800;">₹1,240</span></div>
+      <div class="earnings-row"><span>Jobs completed</span><span style="font-weight:800;">3</span></div>
+      <div class="earnings-row"><span>Trust Score</span><span style="font-weight:800;">4.8 ★</span></div>
+      <div class="primary-btn" onclick="goTo('request')">Simulate: new job ping</div>
+    `,
+    panel:{
+      title:'One toggle, three numbers — nothing else',
+      body:`Rajesh's persona flags low digital literacy and reliance on WhatsApp/calls. So the entire home screen is one switch plus earnings — deliberately not a dashboard with filters, tabs, or settings buried in menus.`,
+      trace:['Persona: Rajesh Kumar — low tech-fluency','Key need: simplistic, low-text interface'],
+      gap:["Original wireframe had a job-history tab on this screen. Cut during prototyping — Rajesh only needs today's numbers to decide whether to keep working, so history moved one tap deeper."]
+    }
+  },
+  {
+    label:'2 · Job request',
+    render: () => `
+      <div class="app-header"><div><h2>New job request</h2><div class="sub">Respond within 45 sec</div></div></div>
+      <div class="job-req-card">
+        <div style="font-size:11px; font-weight:700; color:var(--teal); text-transform:uppercase; letter-spacing:.04em;">AC Deep Cleaning</div>
+        <div style="font-family:'Fraunces',serif; font-size:20px; font-weight:700; margin:6px 0 2px;">Ashoka Nagar, 1.8 km away</div>
+        <div style="font-size:12px; color:var(--muted);">Riya S. · 4.9★ customer · Verified home</div>
+        <div class="payout-pill">₹499 payout</div>
+      </div>
+      <div style="display:flex; gap:10px; margin:16px 20px;">
+        <div class="secondary-btn danger-btn" style="margin:0; width:auto; flex:1;" onclick="alert('Edge case handled: decline sends the job to the next-nearest verified professional automatically.')">Reject</div>
+        <div class="primary-btn" style="margin:0; flex:1;" onclick="goTo('accepted')">Accept</div>
+      </div>
+    `,
+    panel:{
+      title:'One-Tap Job Acceptance — the whole decision on one screen',
+      body:`Job type, distance, customer trust rating and exact payout are all visible before a single tap — no negotiation, matching "Predictable Pricing" from the professional's side too. Big buttons, minimal text, per the low-digital-literacy constraint.`,
+      trace:['MVP feature: One-Tap Job Acceptance Flow','GTM: Guaranteed Minimum Daily Payout (context for payout trust)'],
+      gap:[]
+    }
+  },
+  {
+    label:'3 · Navigate',
+    render: () => `
+      <div class="app-header"><div><h2>Job accepted</h2><div class="sub">#TF-10482 · Riya S.</div></div></div>
+      <div class="map-mock">
+        <div class="map-dot" style="top:55%; left:65%;"></div>
+        <div class="eta-chip">12 min to customer</div>
+      </div>
+      <div class="svc-card" style="cursor:default;"><div><div class="svc-name">AC Deep Cleaning</div><div class="svc-desc">Ashoka Nagar · ₹499 payout</div></div><div class="svc-price">📞</div></div>
+      <div class="primary-btn" onclick="goTo('otpStart')">I've arrived</div>
+    `,
+    panel:{
+      title:"Navigate — reuses the customer's map, nothing new to learn",
+      body:`Same visual language as the customer's tracking screen on purpose: one map pattern, reused everywhere, so Rajesh never has to learn a second interface for the same concept.`,
+      trace:['Constraint: interactions stay simple and intuitive'],
+      gap:[]
+    }
+  },
+  {
+    label:'4 · Start OTP',
+    render: () => `
+      <div class="app-header"><div><h2>Enter Arrival OTP</h2><div class="sub">Ask Riya for her 4-digit code</div></div></div>
+      <div class="otp-card"><div class="otp-label">Enter code shown on customer's phone</div><div class="otp-code">7 4 3 1</div><div class="otp-hint">Tap to confirm — starts the job</div></div>
+      <div class="primary-btn" onclick="goTo('job')">Confirm & start job</div>
+    `,
+    panel:{
+      title:'Same OTP, professional-side entry',
+      body:`Mirroring the customer's OTP screen keeps the mental model identical on both sides of the marketplace — one verification concept, two matching interfaces.`,
+      trace:['MVP feature: OTP-Verified Job Start & End'],
+      gap:[]
+    }
+  },
+  {
+    label:'5 · Execute job',
+    render: () => `
+      <div class="app-header"><div><h2>Job in progress</h2><div class="sub">Timer running · 00:22:41</div></div></div>
+      <div class="section-title">Capture proof</div>
+      <div class="photo-row">
+        <div class="photo-slot filled" onclick="alert('Photo captured (simulated)')">📷 Before ✓</div>
+        <div class="photo-slot" onclick="alert('Photo captured (simulated)')">📷 Tap for After</div>
+      </div>
+      <div class="checklist">
+        <div class="cl-item"><div class="cl-check">✓</div> Unit dismantled & cleaned</div>
+        <div class="cl-item"><div class="cl-check pending"></div> Reassembled & tested</div>
+      </div>
+      <div class="primary-btn" onclick="goTo('otpComplete')">Mark job complete</div>
+    `,
+    panel:{
+      title:'Photos as evidence, not a gallery app',
+      body:`Two tap targets, no filters, no albums — the minimum needed to create a before/after record for the Digital Job Card, kept inside the low-digital-literacy constraint.`,
+      trace:['MVP feature: Before/After Photos'],
+      gap:[]
+    }
+  },
+  {
+    label:'6 · Completion OTP',
+    render: () => `
+      <div class="app-header"><div><h2>Show this code to Riya</h2><div class="sub">She enters it to confirm & pay</div></div></div>
+      <div class="otp-card"><div class="otp-label">Completion OTP</div><div class="otp-code">2 9 0 6</div><div class="otp-hint">Payout releases once customer confirms</div></div>
+      <div class="primary-btn" onclick="goTo('payout')">Simulate: customer confirmed</div>
+    `,
+    panel:{
+      title:'Payout is gated on customer confirmation, not on Rajesh saying "done"',
+      body:`This ordering — professional shows the code, customer types it and pays, then payout releases — was one of the concrete decisions the prototyping process forced, replacing a vaguer wireframe note that just said "job marked complete."`,
+      trace:['User Journey Step 4: Settlement'],
+      gap:['Resolved during build: defined exactly who triggers what, and in which order, between the two apps.']
+    }
+  },
+  {
+    label:'7 · Payout',
+    render: () => `
+      <div class="app-header"><div><h2>Job complete 🎉</h2><div class="sub">Payment received</div></div></div>
+      <div class="job-req-card" style="text-align:center;">
+        <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; font-weight:700;">You earned</div>
+        <div class="payout-pill" style="font-size:26px; margin-top:6px;">₹499</div>
+        <div style="font-size:11px; color:var(--muted); margin-top:8px;">Riya rated this job 👍 · Trust Score now 4.8</div>
+      </div>
+      <div class="earnings-row"><span>Today's total</span><span style="font-weight:800;">₹1,739</span></div>
+      <div class="primary-btn" onclick="goTo('toggle')">Back to available jobs</div>
+    `,
+    panel:{
+      title:'Closing the loop back to availability',
+      body:`Ending on updated earnings and Trust Score — not a generic "thank you" — reinforces the two things that keep Rajesh coming back online: fair, visible earnings and a reputation that compounds.`,
+      trace:['Provider goal: fair earnings','Provider goal: build reputation'],
+      gap:[]
+    }
+  }
+];
+
+/* ---------------- STATE / RENDER ---------------- */
+let currentApp = 'customer';
+let currentIndex = 0;
+const stepIdToIndex = (steps, id) => Math.max(0, steps.findIndex(s => s._id === id));
+
+customerSteps.forEach((s,i)=>{
+  const ids = ['home','category','match','tracking','otpStart','inProgress','otpComplete','rating'];
+  s._id = ids[i];
+});
+proSteps.forEach((s,i)=>{
+  const ids = ['toggle','request','accepted','otpStart','job','otpComplete','payout'];
+  s._id = ids[i];
+});
+
+function currentSteps(){ return currentApp === 'customer' ? customerSteps : proSteps; }
+
+function setApp(app){
+  currentApp = app;
+  currentIndex = 0;
+  document.getElementById('btn-customer').classList.toggle('active', app==='customer');
+  document.getElementById('btn-pro').classList.toggle('active', app==='pro');
+  render();
+}
+
+function goTo(id){
+  const steps = currentSteps();
+  const idx = steps.findIndex(s => s._id === id);
+  if(idx >= 0){ currentIndex = idx; render(); window.scrollTo({top:0}); }
+}
+function nextStep(){ const steps=currentSteps(); if(currentIndex < steps.length-1){ currentIndex++; render(); } }
+function prevStep(){ if(currentIndex > 0){ currentIndex--; render(); } }
+
+function render(){
+  const steps = currentSteps();
+  const step = steps[currentIndex];
+  document.getElementById('screen-body').innerHTML = step.render();
+  document.getElementById('stepLabel').textContent = `${currentApp==='customer'?'Customer App':'Professional App'} · ${step.label}`;
+  document.getElementById('prevBtn').disabled = currentIndex===0;
+  document.getElementById('nextBtn').disabled = currentIndex===steps.length-1;
+
+  const dots = document.getElementById('dots');
+  dots.innerHTML = steps.map((s,i)=>`<div class="dot ${i===currentIndex?'active':''}"></div>`).join('');
+
+  document.getElementById('panelEyebrow').textContent = currentApp==='customer' ? 'Customer flow · Screen rationale' : 'Professional flow · Screen rationale';
+  document.getElementById('panelTitle').textContent = step.panel.title;
+  document.getElementById('panelBody').textContent = step.panel.body;
+  document.getElementById('panelTrace').innerHTML = step.panel.trace.length
+    ? step.panel.trace.map(t=>`<span class="chip trace">${t}</span>`).join('')
+    : `<span class="chip">—</span>`;
+  document.getElementById('panelGap').innerHTML = step.panel.gap.length
+    ? step.panel.gap.map(t=>`<span class="chip gap">${t}</span>`).join('')
+    : `<span class="chip">No new gap surfaced here</span>`;
+}
+
+// clock
+function tick(){
+  const d = new Date();
+  document.getElementById('sb-time').textContent = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12:false});
+}
+tick(); setInterval(tick, 30000);
+
+render();
+</script>
+</body>
+</html>
