@@ -4,7 +4,7 @@
 
 A functional, clickable prototype of TrustFix, a trusted home-services marketplace, built as the Week 3 deliverable: taking the Week 2 wireframes and MVP scope and turning them into an interactive walkthrough of the core customer and service-professional flows.
 
-🔗 **Live demo:** [add your Render URL here after deploying]
+🔗 **Live demo:** https://product-matters-trustfix-prototype.onrender.com 
 
 ## What this is
 
